@@ -1,0 +1,4 @@
+sudo ./prepare.sh 192.168.1 10 enp0s3
+sudo ./comm_date.sh 192.168.1
+sudo ./nfs.sh 192.168.1.0
+sudo ./ganglia.sh 192.168.1
