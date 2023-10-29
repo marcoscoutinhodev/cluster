@@ -1,85 +1,66 @@
-
-#include <stdio.h>
 #include <mpi.h>
-#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-#define SIZE 600
+#define N 3000
 
-int main(int argc, char **argv) {
-  int matrixA[SIZE][SIZE];
-  int matrixB[SIZE][SIZE];
-  int matrixC[SIZE][SIZE];
-  int localA[SIZE][SIZE];
-  int localC[SIZE][SIZE];
+int main(int argc, char* argv[]) {
+    int size, rank;
+    double start_time, end_time;
 
-  // Initialize the MPI environment
-  MPI_Init(NULL, NULL);
+    MPI_Init(&argc, &argv);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-  // Get the number of processes
-  int world_size;
-  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    int elements_per_proc = N / size;
 
-  // Get the rank of the process
-  int world_rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    int *A = (int*)malloc(sizeof(int) * N * N);
+    int *B = (int*)malloc(sizeof(int) * N * N);
+    int *C = (int*)malloc(sizeof(int) * N * N);
 
-  // Get the name of the processor
-  char processor_name[MPI_MAX_PROCESSOR_NAME];
-  int name_len;
-  MPI_Get_processor_name(processor_name, &name_len);
-
-  //clock_t start = clock();
-
-  if (world_rank == 0) {
-    for (int i = 0; i < SIZE; i++) {
-      for (int j = 0; j < SIZE; j++) {
-        matrixA[i][j] = 1;
-        matrixB[i][j] = 2;
-      }
-    }
-  }
-
-  // Broadcast matrixB to all processes
-  MPI_Bcast(&matrixB, SIZE*SIZE, MPI_INT, 0, MPI_COMM_WORLD);
-
-  // Scatter rows of matrixA to all processes
-  int sendcount = SIZE*SIZE/world_size;
-  MPI_Scatter(&matrixA, sendcount, MPI_INT, &localA,
-              sendcount, MPI_INT, 0, MPI_COMM_WORLD);
-
-  clock_t start = clock();
-  // Each process performs its computation
-  for (int i = 0; i < SIZE/world_size; i++) {
-    for (int j = 0; j < SIZE; j++) {
-      localC[i][j] = 0;
-      for (int k = 0; k < SIZE; k++)
-        localC[i][j] += localA[i][k] * matrixB[k][j];
-    }
-  }
-
-  clock_t end = clock();
-  double time_spent = (double)(end - start) / CLOCKS_PER_SEC;
-  printf("%s: %f\n", processor_name, time_spent);
-
-  // Gather all partial results to the final result matrix
-  MPI_Gather(&localC, sendcount, MPI_INT, &matrixC,
-            sendcount, MPI_INT, 0, MPI_COMM_WORLD);
-
-  /*if (world_rank == 0) {
-
-    for (int i = 0; i < SIZE; i++) {
-      for (int j = 0; j < SIZE; j++) {
-        printf("%d ", matrixC[i][j]);
-      }
-
-      printf("\n");
+    if (rank == 0) {
+        for (int i = 0; i < N*N; i++) {
+            A[i] = 1;
+            B[i] = 2;
+        }
     }
 
-  }*/
+    int *sub_A = (int*)malloc(sizeof(int) * elements_per_proc * N);
+    int *sub_C = (int*)malloc(sizeof(int) * elements_per_proc * N);
 
-  // Finalize the MPI environment.
-  MPI_Finalize();
+    MPI_Scatter(A, elements_per_proc*N, MPI_INT, sub_A,
+                elements_per_proc*N, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(B, N*N, MPI_INT, 0, MPI_COMM_WORLD);
 
-  return 0;
+    start_time = MPI_Wtime();
+
+    for (int i = 0; i < elements_per_proc; i++) {
+        for (int j = 0; j < N; j++) {
+            sub_C[i*N + j] = 0;
+            for (int k = 0; k < N; k++) {
+                sub_C[i*N + j] += sub_A[i*N + k] * B[k*N + j];
+            }
+        }
+    }
+
+    MPI_Gather(sub_C, elements_per_proc*N, MPI_INT, C,
+               elements_per_proc*N, MPI_INT, 0, MPI_COMM_WORLD);
+
+    end_time = MPI_Wtime();
+
+    if (rank == 0) {
+        //printf("Matriz resultante:\n");
+        //for (int i = 0; i < N; i++) {
+        //    for (int j = 0; j < N; j++) {
+        //        printf("%d ", C[i*N + j]);
+        //    }
+        //    printf("\n");
+        //}
+        printf("Tempo de execução: %f\n", end_time - start_time);
+    }
+
+    MPI_Finalize();
+
+    return 0;
 }
 
