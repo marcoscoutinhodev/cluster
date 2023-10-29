@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define SIZE 600
+#define SIZE 1000
 
 int matrixA[SIZE][SIZE];
 int matrixB[SIZE][SIZE];
@@ -31,7 +31,15 @@ int main() {
   clock_t end = clock();
   double time_spent = (double)(end - start) / CLOCKS_PER_SEC;
 
+
+        printf(" ____                                   _       _\n");
+        printf("/ ___|  ___  __ _ _   _  ___ _ __   ___(_) __ _| |\n");
+        printf("\\___ \\ / _ \\/ _` | | | |/ _ \\ '_ \\ / __| |/ _` | |\n");
+        printf(" ___) |  __/ (_| | |_| |  __/ | | | (__| | (_| | |\n");
+        printf("|____/ \\___|\\__, |\\__,_|\\___|_| |_|\\___|_|\\__,_|_|\n");
+        printf("               |_|\n");
   printf("Tempo de execução sequencial: %f\n", time_spent);
 
   return 0;
 }
+

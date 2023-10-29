@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define N 3000
+#define N 1000
 
 int main(int argc, char* argv[]) {
     int size, rank;
@@ -56,6 +56,13 @@ int main(int argc, char* argv[]) {
         //    }
         //    printf("\n");
         //}
+
+
+        printf("  ____ _           _\n");
+        printf(" / ___| |_   _ ___| |_ ___ _ __\n");
+        printf("| |   | | | | / __| __/ _ \\ '__|\n");
+        printf("| |___| | |_| \\__ \\ ||  __/ |\n");
+        printf(" \\____|_|\\__,_|___/\\__\\___|_|\n");
         printf("Tempo de execução: %f\n", end_time - start_time);
     }
 
@@ -63,4 +70,5 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
+
 
